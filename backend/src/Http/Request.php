@@ -14,6 +14,53 @@ final class Request
         }
     }
 
+    public static function requirePost(): void
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            header('Allow: POST');
+            ApiResponse::error('method_not_allowed', 'این مسیر فقط درخواست POST را می‌پذیرد.', 405);
+        }
+    }
+
+    /** @return array<string, mixed> */
+    public static function jsonBody(int $maximumBytes = 32768): array
+    {
+        $contentType = strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
+        if ($contentType !== 'application/json') {
+            ApiResponse::error('unsupported_media_type', 'بدنه درخواست باید JSON باشد.', 415);
+        }
+
+        $contentLength = filter_var($_SERVER['CONTENT_LENGTH'] ?? null, FILTER_VALIDATE_INT);
+        if ($contentLength !== false && $contentLength > $maximumBytes) {
+            ApiResponse::error('payload_too_large', 'حجم درخواست بیش از حد مجاز است.', 413);
+        }
+
+        $raw = file_get_contents('php://input', false, null, 0, $maximumBytes + 1);
+        if ($raw === false || $raw === '' || strlen($raw) > $maximumBytes) {
+            ApiResponse::error('invalid_json', 'بدنه درخواست خالی یا بیش از حد مجاز است.', 400);
+        }
+
+        try {
+            $payload = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            ApiResponse::error('invalid_json', 'ساختار JSON معتبر نیست.', 400);
+        }
+
+        if (!is_array($payload) || array_is_list($payload)) {
+            ApiResponse::error('invalid_json', 'بدنه درخواست باید یک شیء JSON باشد.', 400);
+        }
+
+        return $payload;
+    }
+
+    public static function header(string $name): ?string
+    {
+        $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+        $value = $_SERVER[$key] ?? null;
+
+        return is_string($value) && trim($value) !== '' ? trim($value) : null;
+    }
+
     public static function optionalString(string $key, int $maxLength): ?string
     {
         if (!isset($_GET[$key]) || $_GET[$key] === '') {

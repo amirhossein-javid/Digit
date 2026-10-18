@@ -13,6 +13,51 @@
     message,
     '<button class="btn btn--primary js-retry" type="button">تلاش دوباره</button>'
   );
+  const ORDER_ATTEMPT_KEY = 'nova_order_attempt_v1';
+  const ORDER_ATTEMPT_CART = 'nova_order_attempt_cart_v1';
+  let memoryOrderAttemptKey = null;
+  let memoryOrderAttemptCart = null;
+  let checkoutSubmitting = false;
+  let orderCompleted = false;
+
+  function generateOrderAttemptKey() {
+    if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+
+    const bytes = new Uint8Array(16);
+    if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
+    else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
+  function getOrderAttemptKey(cartFingerprint) {
+    try {
+      const saved = sessionStorage.getItem(ORDER_ATTEMPT_KEY);
+      const savedCart = sessionStorage.getItem(ORDER_ATTEMPT_CART);
+      if (saved && savedCart === cartFingerprint) return saved;
+      const created = generateOrderAttemptKey();
+      sessionStorage.setItem(ORDER_ATTEMPT_KEY, created);
+      sessionStorage.setItem(ORDER_ATTEMPT_CART, cartFingerprint);
+      return created;
+    } catch (_) {
+      if (!memoryOrderAttemptKey || memoryOrderAttemptCart !== cartFingerprint) {
+        memoryOrderAttemptKey = generateOrderAttemptKey();
+        memoryOrderAttemptCart = cartFingerprint;
+      }
+      return memoryOrderAttemptKey;
+    }
+  }
+
+  function clearOrderAttemptKey() {
+    memoryOrderAttemptKey = null;
+    memoryOrderAttemptCart = null;
+    try {
+      sessionStorage.removeItem(ORDER_ATTEMPT_KEY);
+      sessionStorage.removeItem(ORDER_ATTEMPT_CART);
+    } catch (_) { /* Storage may be unavailable. */ }
+  }
 
   async function populateCategories(selectedCategory) {
     const select = $('#categoryFilter');
@@ -213,19 +258,69 @@
       return;
     }
     summary.innerHTML = `<h2>خلاصه سفارش</h2>${lines.map(({ product, quantity }) => `<p><span>${store.escapeHtml(product.name)} × ${store.fa.format(quantity)}</span><b>${store.formatPrice(product.price * quantity)}</b></p>`).join('')}<hr><p><span>جمع کل</span><strong>${store.formatPrice(store.cartTotal())}</strong></p><small>اقلام و تعداد محصولات را پیش از ادامه بررسی کنید.</small>`;
-    form.addEventListener('submit', event => {
+    const submitButton = form.querySelector('[type="submit"]');
+    submitButton.textContent = 'ثبت سفارش';
+    if (form.dataset.orderBound === 'true') return;
+    form.dataset.orderBound = 'true';
+
+    form.addEventListener('submit', async event => {
       event.preventDefault();
+      if (checkoutSubmitting) return;
       if (!form.checkValidity()) { form.reportValidity(); return; }
       const phone = $('#checkoutPhone');
-      if (!/^09\d{9}$/.test(phone.value.replace(/[۰-۹]/g, digit => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))) {
+      const normalizedPhone = phone.value
+        .replace(/[۰-۹]/g, digit => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))
+        .replace(/[٠-٩]/g, digit => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit))
+        .replace(/[\s\-()]+/g, '');
+      if (!/^09\d{9}$/.test(normalizedPhone)) {
         phone.setCustomValidity('شماره موبایل را با ۰۹ و ۱۱ رقم وارد کنید.');
         phone.reportValidity();
         phone.addEventListener('input', () => phone.setCustomValidity(''), { once: true });
         return;
       }
-      form.hidden = true;
-      $('#checkoutSuccess').hidden = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      const currentLines = store.cartLines();
+      if (!currentLines.length) {
+        renderCheckout();
+        return;
+      }
+
+      checkoutSubmitting = true;
+      submitButton.disabled = true;
+      submitButton.setAttribute('aria-busy', 'true');
+      submitButton.textContent = 'در حال ثبت سفارش…';
+      const formData = new FormData(form);
+      const payload = {
+        customer: {
+          name: formData.get('name'),
+          phone: formData.get('phone'),
+          email: formData.get('email'),
+          city: formData.get('city'),
+          address: formData.get('address'),
+          postalCode: formData.get('postal')
+        },
+        items: currentLines.map(({ product, quantity }) => ({ productId: product.id, quantity }))
+      };
+
+      try {
+        const cartFingerprint = JSON.stringify(payload.items);
+        const result = await store.createOrder(payload, getOrderAttemptKey(cartFingerprint));
+        orderCompleted = true;
+        const success = $('#checkoutSuccess');
+        success.querySelector('h2').textContent = 'سفارش شما ثبت شد';
+        success.querySelector('p').textContent = `شماره سفارش ${result.orderNumber} با موفقیت ثبت شد.`;
+        form.hidden = true;
+        success.hidden = false;
+        store.clearCart();
+        clearOrderAttemptKey();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        showMessage(error instanceof store.ApiError ? error.message : 'ثبت سفارش انجام نشد. لطفاً دوباره تلاش کنید.');
+        checkoutSubmitting = false;
+        submitButton.disabled = false;
+        submitButton.removeAttribute('aria-busy');
+        submitButton.textContent = 'ثبت سفارش';
+      }
     });
   }
 
@@ -257,5 +352,5 @@
   document.addEventListener('click', event => {
     if (event.target.closest('.js-retry')) location.reload();
   });
-  document.addEventListener('nova:cart-change', () => { if ($('#checkoutSummary')) renderCheckout(); });
+  document.addEventListener('nova:cart-change', () => { if (!orderCompleted && $('#checkoutSummary')) renderCheckout(); });
 })();

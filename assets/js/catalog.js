@@ -189,7 +189,7 @@
     return normalized;
   }
 
-  async function request(endpoint, parameters = {}) {
+  async function request(endpoint, parameters = {}, options = {}) {
     const url = new URL(`${apiBase}/${endpoint}`, document.baseURI);
     Object.entries(parameters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
@@ -199,9 +199,12 @@
     const timeout = setTimeout(() => controller.abort(), 12000);
 
     try {
+      const method = options.method || 'GET';
+      const headers = { Accept: 'application/json', ...(options.headers || {}) };
       const response = await fetch(url, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
+        method,
+        headers,
+        body: options.body === undefined ? undefined : JSON.stringify(options.body),
         signal: controller.signal
       });
       let payload;
@@ -267,6 +270,19 @@
     return payload.data;
   }
 
+  async function createOrder(order, idempotencyKey) {
+    const payload = await request('orders.php', {}, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': idempotencyKey
+      },
+      body: order
+    });
+    if (!payload.data?.orderNumber) throw new ApiError('پاسخ ثبت سفارش معتبر نیست.', 0, 'invalid_response');
+    return payload.data;
+  }
+
   const formatPrice = value => `${fa.format(value)} تومان`;
   const getProduct = id => products.find(product => product.id === Number(id));
 
@@ -283,6 +299,10 @@
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
     updateCartBadges();
     document.dispatchEvent(new CustomEvent('nova:cart-change'));
+  }
+
+  function clearCart() {
+    saveCart({});
   }
 
   function addToCart(id, quantity = 1) {
@@ -335,8 +355,8 @@
 
   window.NovaStore = {
     products, fa, apiBase, ApiError, escapeHtml, formatPrice, getProduct,
-    fetchProducts, loadCatalog, fetchProduct, fetchCategories,
-    getCart, saveCart, addToCart, updateCartItem, cartLines, cartTotal,
+    fetchProducts, loadCatalog, fetchProduct, fetchCategories, createOrder,
+    getCart, saveCart, clearCart, addToCart, updateCartItem, cartLines, cartTotal,
     cartCount, updateCartBadges, picture, productCard
   };
 })();

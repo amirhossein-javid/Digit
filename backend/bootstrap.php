@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Nova\Config\Environment;
 use Nova\Database\Connection;
+use Nova\Exception\ApiException;
 use Nova\Http\ApiResponse;
 
 spl_autoload_register(static function (string $class): void {
@@ -33,6 +34,10 @@ set_error_handler(static function (int $severity, string $message, string $file,
 });
 
 set_exception_handler(static function (Throwable $exception): void {
+    if ($exception instanceof ApiException) {
+        ApiResponse::error($exception->errorCode(), $exception->getMessage(), $exception->status());
+    }
+
     error_log(sprintf(
         '[Nova API] %s in %s:%d',
         $exception->getMessage(),
