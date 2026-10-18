@@ -1,3 +1,21 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime and editor files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+.idea/
+.vscode/
+
+# Local database exports
+*.sql.gz
+*.sql.zip
