@@ -25,7 +25,7 @@ final class ProductRepository
      */
     public function paginate(?string $search, ?string $category, string $sort, int $page, int $limit): array
     {
-        $where = [];
+        $where = ['p.is_active = 1'];
         $parameters = [];
 
         if ($search !== null) {
@@ -83,7 +83,7 @@ final class ProductRepository
                     p.is_featured, p.is_new, p.stock_status, c.name AS category, c.slug AS category_slug
              FROM products p
              INNER JOIN categories c ON c.id = p.category_id
-             WHERE p.id = :id
+             WHERE p.id = :id AND p.is_active = 1
              LIMIT 1'
         );
         $statement->bindValue(':id', $id, PDO::PARAM_INT);

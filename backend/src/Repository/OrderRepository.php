@@ -39,7 +39,7 @@ final class OrderRepository
             $totalQuantity = 0;
             foreach ($order['items'] as $item) {
                 $product = $products[$item['product_id']];
-                if ($product['stock_status'] === 'out_of_stock') {
+                if (!(bool) $product['is_active'] || $product['stock_status'] === 'out_of_stock') {
                     throw new ApiException('product_unavailable', sprintf('محصول «%s» در حال حاضر موجود نیست.', $product['name']), 409);
                 }
 
@@ -145,7 +145,7 @@ final class OrderRepository
     {
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $statement = $this->database->prepare(
-            'SELECT id, name, price, stock_status
+            'SELECT id, name, price, stock_status, is_active
              FROM products
              WHERE id IN (' . $placeholders . ')
              FOR UPDATE'

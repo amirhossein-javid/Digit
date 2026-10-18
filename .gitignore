@@ -19,3 +19,8 @@ Thumbs.db
 # Local database exports
 *.sql.gz
 *.sql.zip
+
+# Runtime product uploads
+assets/images/products/uploads/*
+!assets/images/products/uploads/.gitkeep
+!assets/images/products/uploads/.htaccess
