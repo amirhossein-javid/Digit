@@ -1,6 +1,8 @@
 (() => {
   'use strict';
 
+  // این snapshot فقط سازگاری سبد خرید محلی را تا زمان انتقال آن به بک‌اند حفظ می‌کند.
+  // تمام فهرست‌ها و جزئیات قابل مشاهده از API دریافت می‌شوند.
   const products = [
     {
       id: 1,
@@ -138,6 +140,133 @@
 
   const fa = new Intl.NumberFormat('fa-IR');
   const CART_KEY = 'nova_demo_cart_v2';
+  const configuredApiBase = window.NOVA_CONFIG?.apiBase || document.documentElement.dataset.apiBase || 'api';
+  const apiBase = String(configuredApiBase).replace(/\/+$/, '') || 'api';
+  let catalogPromise = null;
+
+  class ApiError extends Error {
+    constructor(message, status = 0, code = 'network_error') {
+      super(message);
+      this.name = 'ApiError';
+      this.status = status;
+      this.code = code;
+    }
+  }
+
+  const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
+  })[character]);
+
+  function normalizeProduct(product) {
+    if (!product || !Number.isInteger(Number(product.id)) || !product.name) {
+      throw new ApiError('پاسخ محصولات معتبر نیست.', 0, 'invalid_response');
+    }
+
+    return {
+      ...product,
+      id: Number(product.id),
+      price: Number(product.price) || 0,
+      featured: Boolean(product.featured),
+      isNew: Boolean(product.isNew),
+      specs: Array.isArray(product.specs) ? product.specs : []
+    };
+  }
+
+  function mergeProducts(items, replace = false) {
+    const normalized = items.map(normalizeProduct);
+
+    if (replace && normalized.length) {
+      products.splice(0, products.length, ...normalized);
+      return normalized;
+    }
+
+    normalized.forEach(product => {
+      const index = products.findIndex(item => item.id === product.id);
+      if (index === -1) products.push(product);
+      else products[index] = { ...products[index], ...product };
+    });
+    products.sort((first, second) => first.id - second.id);
+    return normalized;
+  }
+
+  async function request(endpoint, parameters = {}) {
+    const url = new URL(`${apiBase}/${endpoint}`, document.baseURI);
+    Object.entries(parameters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: controller.signal
+      });
+      let payload;
+
+      try {
+        payload = await response.json();
+      } catch (_) {
+        throw new ApiError('پاسخ سرویس قابل پردازش نیست.', response.status, 'invalid_response');
+      }
+
+      if (!response.ok || payload?.success !== true) {
+        throw new ApiError(
+          payload?.error?.message || 'دریافت اطلاعات با خطا روبه‌رو شد.',
+          response.status,
+          payload?.error?.code || 'request_failed'
+        );
+      }
+
+      return payload;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      const message = error?.name === 'AbortError'
+        ? 'زمان پاسخ‌گویی سرویس به پایان رسید.'
+        : 'ارتباط با سرویس محصولات برقرار نشد.';
+      throw new ApiError(message, 0, error?.name === 'AbortError' ? 'timeout' : 'network_error');
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async function fetchProducts(parameters = {}) {
+    const payload = await request('products.php', parameters);
+    if (!Array.isArray(payload.data)) throw new ApiError('پاسخ محصولات معتبر نیست.', 0, 'invalid_response');
+    return { items: mergeProducts(payload.data), meta: payload.meta || {} };
+  }
+
+  async function loadCatalog() {
+    if (!catalogPromise) {
+      catalogPromise = fetchProducts({ limit: 100 })
+        .then(result => {
+          const items = mergeProducts(result.items, true);
+          return { ...result, items };
+        })
+        .catch(error => {
+          catalogPromise = null;
+          throw error;
+        });
+    }
+
+    return catalogPromise;
+  }
+
+  async function fetchProduct(id) {
+    const payload = await request('product.php', { id });
+    const product = normalizeProduct(payload.data);
+    mergeProducts([product]);
+    return product;
+  }
+
+  async function fetchCategories() {
+    const payload = await request('categories.php');
+    if (!Array.isArray(payload.data)) throw new ApiError('پاسخ دسته‌بندی‌ها معتبر نیست.', 0, 'invalid_response');
+    return payload.data;
+  }
+
   const formatPrice = value => `${fa.format(value)} تومان`;
   const getProduct = id => products.find(product => product.id === Number(id));
 
@@ -189,18 +318,25 @@
   }
 
   function picture(product, eager = false) {
-    return `<picture><source srcset="${product.avif}" type="image/avif"><img src="${product.image}" alt="${product.name}" width="720" height="720" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></picture>`;
+    return `<picture><source srcset="${escapeHtml(product.avif)}" type="image/avif"><img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" width="720" height="720" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></picture>`;
   }
 
   function productCard(product) {
+    const name = escapeHtml(product.name);
+    const category = escapeHtml(product.category);
     return `<article class="product-card" data-id="${product.id}">
-      <a class="product-image" href="product.html?id=${product.id}" aria-label="مشاهده ${product.name}">${picture(product)}</a>
-      <small class="product-category">${product.category}</small>
-      <h3><a href="product.html?id=${product.id}">${product.name}</a></h3>
+      <a class="product-image" href="product.html?id=${product.id}" aria-label="مشاهده ${name}">${picture(product)}</a>
+      <small class="product-category">${category}</small>
+      <h3><a href="product.html?id=${product.id}">${name}</a></h3>
       <div class="price-row"><strong>${formatPrice(product.price)}</strong></div>
-      <div class="product-meta"><a class="details-link" href="product.html?id=${product.id}">جزئیات</a><button class="add-btn js-add-cart" type="button" data-product-id="${product.id}" aria-label="افزودن ${product.name} به سبد خرید">+</button></div>
+      <div class="product-meta"><a class="details-link" href="product.html?id=${product.id}">جزئیات</a><button class="add-btn js-add-cart" type="button" data-product-id="${product.id}" aria-label="افزودن ${name} به سبد خرید">+</button></div>
     </article>`;
   }
 
-  window.NovaStore = { products, fa, formatPrice, getProduct, getCart, saveCart, addToCart, updateCartItem, cartLines, cartTotal, cartCount, updateCartBadges, picture, productCard };
+  window.NovaStore = {
+    products, fa, apiBase, ApiError, escapeHtml, formatPrice, getProduct,
+    fetchProducts, loadCatalog, fetchProduct, fetchCategories,
+    getCart, saveCart, addToCart, updateCartItem, cartLines, cartTotal,
+    cartCount, updateCartBadges, picture, productCard
+  };
 })();

@@ -38,30 +38,53 @@
   const store = window.NovaStore;
   const isHome = document.body.classList.contains('home-page');
 
-  const homeProductName = product => product.name;
-  const homeProductCard = product => {
-    const name = homeProductName(product);
-    return `<article class="product-card" data-id="${product.id}">
-      <a class="product-image" href="product.html?id=${product.id}" aria-label="مشاهده ${name}">${store.picture(product)}</a>
-      <small class="product-category">${product.category}</small>
-      <h3><a href="product.html?id=${product.id}">${name}</a></h3>
-      <div class="price-row"><strong>${store.formatPrice(product.price)}</strong></div>
-      <div class="product-meta"><a class="details-link" href="product.html?id=${product.id}">جزئیات</a><button class="add-btn js-add-cart" type="button" data-product-id="${product.id}" aria-label="افزودن ${name} به سبد خرید">+</button></div>
-    </article>`;
-  };
+  const stateMarkup = (title, message) => `<div class="empty-state" role="status"><h2>${title}</h2><p>${message}</p></div>`;
 
-  if (store) {
-    store.updateCartBadges();
+  async function renderHomeProducts() {
     const featured = $('#dealProducts');
     const newest = $('#newProducts');
     const best = $('#bestProducts');
-    if (featured) featured.innerHTML = store.products.slice(0, 6).map(isHome ? homeProductCard : store.productCard).join('');
-    if (newest) newest.innerHTML = store.products.slice(6, 12).map(isHome ? homeProductCard : store.productCard).join('');
-    if (best) best.innerHTML = store.products.slice(0, 5).map((product, index) => {
-      const name = isHome ? homeProductName(product) : product.name;
-      return `<article class="best-card" data-id="${product.id}"><span class="best-rank">۰${index + 1}</span><a href="product.html?id=${product.id}">${store.picture(product)}</a><div><h3><a href="product.html?id=${product.id}">${name}</a></h3><small>${product.category}</small><strong>${store.formatPrice(product.price)}</strong></div><button class="add-best js-add-cart" type="button" data-product-id="${product.id}" aria-label="افزودن ${name} به سبد خرید">+</button></article>`;
-    }).join('');
+    if (!store || (!featured && !newest && !best)) return;
+
+    const loading = stateMarkup('در حال بارگذاری محصولات', 'لطفاً چند لحظه صبر کنید.');
+    if (featured) featured.innerHTML = loading;
+    if (newest) newest.innerHTML = loading;
+    if (best) best.innerHTML = loading;
+
+    try {
+      const { items } = await store.loadCatalog();
+      if (!items.length) {
+        const empty = stateMarkup('محصولی برای نمایش وجود ندارد', 'کاتالوگ در حال حاضر خالی است.');
+        if (featured) featured.innerHTML = empty;
+        if (newest) newest.innerHTML = empty;
+        if (best) best.innerHTML = empty;
+        return;
+      }
+
+      const featuredProducts = items.filter(product => product.featured).slice(0, 6);
+      const newProducts = items.filter(product => product.isNew).slice(0, 6);
+      const bestProducts = items.slice(0, 5);
+      if (featured) featured.innerHTML = featuredProducts.length
+        ? featuredProducts.map(store.productCard).join('')
+        : stateMarkup('پیشنهاد فعالی وجود ندارد', 'در حال حاضر محصولی در این بخش ثبت نشده است.');
+      if (newest) newest.innerHTML = newProducts.length
+        ? newProducts.map(store.productCard).join('')
+        : stateMarkup('محصول تازه‌ای وجود ندارد', 'محصولات جدید پس از ثبت در این بخش نمایش داده می‌شوند.');
+      if (best) best.innerHTML = bestProducts.map((product, index) => {
+        const name = store.escapeHtml(product.name);
+        const category = store.escapeHtml(product.category);
+        return `<article class="best-card" data-id="${product.id}"><span class="best-rank">۰${index + 1}</span><a href="product.html?id=${product.id}">${store.picture(product)}</a><div><h3><a href="product.html?id=${product.id}">${name}</a></h3><small>${category}</small><strong>${store.formatPrice(product.price)}</strong></div><button class="add-best js-add-cart" type="button" data-product-id="${product.id}" aria-label="افزودن ${name} به سبد خرید">+</button></article>`;
+      }).join('');
+    } catch (_) {
+      const error = stateMarkup('بارگذاری محصولات انجام نشد', 'ارتباط با سرویس محصولات را بررسی و صفحه را دوباره بارگذاری کنید.');
+      if (featured) featured.innerHTML = error;
+      if (newest) newest.innerHTML = error;
+      if (best) best.innerHTML = error;
+    }
   }
+
+  if (store) store.updateCartBadges();
+  if (isHome) renderHomeProducts();
 
   const toast = $('.toast');
   function showToast(message) {
