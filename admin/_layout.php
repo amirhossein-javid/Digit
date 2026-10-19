@@ -33,13 +33,13 @@ function admin_header(string $title, string $active = ''): void
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{$safeTitle} | مدیریت نُوا</title>
+  <title>{$safeTitle} | مدیریت دیجیت</title>
   <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
   <header class="admin-topbar">
     <button class="menu-button" type="button" aria-label="بازکردن منو" aria-expanded="false" data-admin-menu>☰</button>
-    <a class="admin-brand" href="index.php"><i>×</i><strong>نُوا</strong><span>مدیریت</span></a>
+    <a class="admin-brand" href="index.php"><i>×</i><strong>دیجیت</strong><span>مدیریت</span></a>
     <div class="admin-account"><span>{$username}</span><form action="logout.php" method="post"><input type="hidden" name="_csrf" value="{$csrf}"><button type="submit">خروج</button></form></div>
   </header>
   <div class="admin-shell">
@@ -65,8 +65,8 @@ function admin_auth_header(string $title): void
     $safeTitle = admin_e($title);
     echo <<<HTML
 <!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{$safeTitle} | مدیریت نُوا</title><link rel="stylesheet" href="assets/admin.css"></head><body class="auth-page"><main class="auth-card">
-<a class="admin-brand admin-brand--center" href="../index.html"><i>×</i><strong>نُوا</strong><span>مدیریت</span></a>
+<title>{$safeTitle} | مدیریت دیجیت</title><link rel="stylesheet" href="assets/admin.css"></head><body class="auth-page"><main class="auth-card">
+<a class="admin-brand admin-brand--center" href="../index.html"><i>×</i><strong>دیجیت</strong><span>مدیریت</span></a>
 HTML;
 }
 

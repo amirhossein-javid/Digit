@@ -195,7 +195,7 @@
       }[product.stockStatus] || ['وضعیت موجودی: نیازمند استعلام', 'برای اطلاع از موجودی و شرایط عرضه با پشتیبانی تماس بگیرید.'];
       const specifications = product.specs.map(([key, value]) => `<div><dt>${store.escapeHtml(key)}</dt><dd>${store.escapeHtml(value)}</dd></div>`).join('');
 
-      document.title = `${product.name} | نُوا`;
+      document.title = `${product.name} | دیجیت`;
       root.innerHTML = `<nav class="breadcrumbs" aria-label="مسیر صفحه"><a href="index.html">خانه</a><span>←</span><a href="shop.html">فروشگاه</a><span>←</span><span>${name}</span></nav>
         <div class="product-detail-grid">
           <section class="product-gallery" aria-label="گالری محصول">

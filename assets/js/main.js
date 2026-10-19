@@ -10,10 +10,10 @@
     const footerRoot = document.querySelector('[data-site-footer]');
 
     if (headerRoot) {
-      headerRoot.outerHTML = `<div class="announcement"><div class="container announcement__inner"><span>🚚 ارسال سریع و رایگان برای سفارش‌های واجد شرایط</span><div><a href="about.html">درباره نُوا</a><span class="sep"></span><a href="contact.html">پشتیبانی و تماس</a></div></div></div>
+      headerRoot.outerHTML = `<div class="announcement"><div class="container announcement__inner"><span>🚚 ارسال سریع و رایگان برای سفارش‌های واجد شرایط</span><div><a href="about.html">درباره دیجیت</a><span class="sep"></span><a href="contact.html">پشتیبانی و تماس</a></div></div></div>
       <header class="site-header">
         <div class="container header-main">
-          <a class="brand" href="index.html" aria-label="صفحه اصلی نُوا"><i>×</i><strong>نُوا</strong></a>
+          <a class="brand" href="index.html" aria-label="صفحه اصلی دیجیت"><i>×</i><strong>دیجیت</strong></a>
           <nav class="desktop-nav" aria-label="منوی اصلی">${navLink('index.html', 'خانه', 'home')}${navLink('shop.html', 'فروشگاه', 'shop')}${navLink('about.html', 'درباره ما', 'about')}${navLink('contact.html', 'تماس با ما', 'contact')}</nav>
           <div class="header-actions">
             <form class="search search-form" action="shop.html"><input name="q" type="search" placeholder="جستجو میان محصولات..." aria-label="جستجوی محصولات"><button type="submit" aria-label="جستجو">⌕</button></form>
@@ -27,7 +27,7 @@
     }
 
     if (footerRoot) {
-      footerRoot.outerHTML = `<footer id="footer"><div class="container footer-grid"><div class="footer-brand"><a class="brand brand--light" href="index.html"><i>×</i><strong>نُوا</strong></a><p>مرجعی برای بررسی و انتخاب محصولات دیجیتال متناسب با نیاز شما.</p></div><div><h3>فروشگاه</h3><a href="shop.html">همه محصولات</a><a href="shop.html?category=لپ‌تاپ">لپ‌تاپ</a><a href="shop.html?category=صوتی">محصولات صوتی</a><a href="cart.html">سبد خرید</a></div><div><h3>خدمات مشتریان</h3><a href="about.html#buying-guide">راهنمای انتخاب</a><a href="cart.html">مدیریت سبد خرید</a><a href="checkout.html">تسویه‌حساب</a><a href="contact.html">پشتیبانی</a></div><div><h3>درباره نُوا</h3><a href="about.html">درباره ما</a><a href="contact.html">تماس با ما</a><a href="index.html#categories">دسته‌بندی‌ها</a><a href="index.html#new">جدیدترین‌ها</a></div><div><h3>دسترسی سریع</h3><a href="index.html#deals">پیشنهادها</a><a href="index.html#brands">کالکشن‌ها</a><a href="shop.html?category=گیمینگ">گیمینگ</a><a href="shop.html?category=دوربین">دوربین</a></div><div><h3>فرایند خرید</h3><div class="payments"><span>سبد خرید</span><span>خلاصه سفارش</span><span>بررسی نهایی</span></div></div></div><div class="container copyright"><span>© ۱۴۰۵ نُوا. تمامی حقوق محفوظ است.</span><span>فروشگاه محصولات دیجیتال</span></div></footer>`;
+      footerRoot.outerHTML = `<footer id="footer"><div class="container footer-grid"><div class="footer-brand"><a class="brand brand--light" href="index.html"><i>×</i><strong>دیجیت</strong></a><p>مرجعی برای بررسی و انتخاب محصولات دیجیتال متناسب با نیاز شما.</p></div><div><h3>فروشگاه</h3><a href="shop.html">همه محصولات</a><a href="shop.html?category=لپ‌تاپ">لپ‌تاپ</a><a href="shop.html?category=صوتی">محصولات صوتی</a><a href="cart.html">سبد خرید</a></div><div><h3>خدمات مشتریان</h3><a href="about.html#buying-guide">راهنمای انتخاب</a><a href="cart.html">مدیریت سبد خرید</a><a href="checkout.html">تسویه‌حساب</a><a href="contact.html">پشتیبانی</a></div><div><h3>درباره دیجیت</h3><a href="about.html">درباره ما</a><a href="contact.html">تماس با ما</a><a href="index.html#categories">دسته‌بندی‌ها</a><a href="index.html#new">جدیدترین‌ها</a></div><div><h3>دسترسی سریع</h3><a href="index.html#deals">پیشنهادها</a><a href="index.html#brands">کالکشن‌ها</a><a href="shop.html?category=گیمینگ">گیمینگ</a><a href="shop.html?category=دوربین">دوربین</a></div><div><h3>فرایند خرید</h3><div class="payments"><span>سبد خرید</span><span>خلاصه سفارش</span><span>بررسی نهایی</span></div></div></div><div class="container copyright"><span>© ۱۴۰۵ دیجیت. تمامی حقوق محفوظ است.</span><span>فروشگاه محصولات دیجیتال</span></div></footer>`;
     }
   }
 

@@ -37,7 +37,7 @@ set_exception_handler(static function (Throwable $exception): void {
     if (!headers_sent()) {
         header('Content-Type: text/html; charset=utf-8');
     }
-    echo '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>خطا | مدیریت نُوا</title>'
+    echo '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>خطا | مدیریت دیجیت</title>'
         . '<link rel="stylesheet" href="assets/admin.css"><body class="auth-page"><main class="auth-card"><h1>خطایی رخ داد</h1>'
         . '<p>امکان پردازش درخواست وجود ندارد. لطفاً دوباره تلاش کنید.</p></main></body></html>';
 });
