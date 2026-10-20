@@ -3,3 +3,6 @@
 .panel-spaced{margin-top:18px}@media(min-width:620px){.stats-grid{grid-template-columns:repeat(3,1fr)}.filters{grid-template-columns:minmax(220px,1fr) 180px auto}.filters .btn{width:auto}.form-grid{grid-template-columns:repeat(2,1fr)}.info-grid{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:900px){.menu-button{display:none}.admin-shell{display:grid;grid-template-columns:230px minmax(0,1fr)}.admin-nav{display:grid;align-content:start;gap:5px;position:sticky;inset:auto;top:68px;height:calc(100vh - 68px);box-shadow:none;padding:20px 14px}.admin-main{padding:30px}.order-layout{grid-template-columns:minmax(0,1.55fr) minmax(300px,.7fr)}.form-card{padding:24px}}
 .admin-main{min-width:0}.admin-account{min-width:0}.admin-account>span{max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.split-layout{display:grid;gap:18px}.split-layout>.form-card h2{margin-top:0}@media(min-width:1050px){.split-layout{grid-template-columns:minmax(320px,.65fr) minmax(0,1.35fr);align-items:start}}
+.message-body{margin:0 18px 18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#faf9fc;line-height:2;overflow-wrap:anywhere}
+@media(min-width:620px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){.stats-grid{grid-template-columns:repeat(4,1fr)}}

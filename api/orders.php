@@ -10,6 +10,7 @@ use Nova\Service\OrderValidator;
 require __DIR__ . '/_bootstrap.php';
 
 Request::requirePost();
+Request::requireSameOrigin();
 $payload = Request::jsonBody();
 $validated = (new OrderValidator())->validate($payload, Request::header('Idempotency-Key'));
 $result = (new OrderRepository(nova_database()))->create($validated);

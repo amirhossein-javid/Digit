@@ -161,10 +161,11 @@
       input.value = String(Math.max(1, Math.min(20, (Number(input.value) || 1) + delta)));
     }));
 
-    $('#productAddForm').addEventListener('submit', event => {
+    $('#productAddForm')?.addEventListener('submit', event => {
       event.preventDefault();
-      store.addToCart(product.id, $('#productQuantity').value);
-      showMessage('محصول به سبد خرید افزوده شد.');
+      showMessage(store.addToCart(product.id, $('#productQuantity').value)
+        ? 'محصول به سبد خرید افزوده شد.'
+        : 'این محصول در حال حاضر قابل سفارش نیست.');
     });
   }
 
@@ -189,10 +190,11 @@
       const category = store.escapeHtml(product.category);
       const description = store.escapeHtml(product.description);
       const stock = {
-        inquiry: ['وضعیت موجودی: نیازمند استعلام', 'برای اطلاع از موجودی و شرایط عرضه با پشتیبانی تماس بگیرید.'],
+        inquiry: ['وضعیت موجودی: نیازمند استعلام', 'سفارش ثبت می‌شود و موجودی پیش از تأیید نهایی بررسی خواهد شد.'],
         in_stock: ['وضعیت موجودی: موجود', 'این محصول در حال حاضر قابل سفارش است.'],
         out_of_stock: ['وضعیت موجودی: ناموجود', 'این محصول در حال حاضر قابل سفارش نیست.']
-      }[product.stockStatus] || ['وضعیت موجودی: نیازمند استعلام', 'برای اطلاع از موجودی و شرایط عرضه با پشتیبانی تماس بگیرید.'];
+      }[product.stockStatus] || ['وضعیت موجودی: نیازمند استعلام', 'سفارش ثبت می‌شود و موجودی پیش از تأیید نهایی بررسی خواهد شد.'];
+      const unavailable = product.stockStatus === 'out_of_stock';
       const specifications = product.specs.map(([key, value]) => `<div><dt>${store.escapeHtml(key)}</dt><dd>${store.escapeHtml(value)}</dd></div>`).join('');
 
       document.title = `${product.name} | دیجیت`;
@@ -213,8 +215,8 @@
             <div class="demo-price"><small>قیمت</small><strong>${store.formatPrice(product.price)}</strong></div>
             <p class="availability-note"><b>${stock[0]}</b> ${stock[1]}</p>
             <form class="purchase-row" id="productAddForm">
-              <label>تعداد<span class="quantity-stepper"><button type="button" data-qty-action="minus" aria-label="کاهش تعداد">−</button><input id="productQuantity" type="number" min="1" max="20" value="1" inputmode="numeric" aria-label="تعداد محصول"><button type="button" data-qty-action="plus" aria-label="افزایش تعداد">+</button></span></label>
-              <button class="btn btn--primary" type="submit">افزودن به سبد خرید</button>
+              <label>تعداد<span class="quantity-stepper"><button type="button" data-qty-action="minus" aria-label="کاهش تعداد" ${unavailable ? 'disabled' : ''}>−</button><input id="productQuantity" type="number" min="1" max="20" value="1" inputmode="numeric" aria-label="تعداد محصول" ${unavailable ? 'disabled' : ''}><button type="button" data-qty-action="plus" aria-label="افزایش تعداد" ${unavailable ? 'disabled' : ''}>+</button></span></label>
+              <button class="btn btn--primary" type="submit" ${unavailable ? 'disabled' : ''}>${unavailable ? 'ناموجود' : 'افزودن به سبد خرید'}</button>
             </form>
             <a class="text-link" href="contact.html">پرسش درباره انتخاب این محصول ←</a>
           </section>
@@ -240,10 +242,12 @@
       root.innerHTML = '<div class="empty-state"><h1>سبد خرید شما خالی است</h1><p>محصولات دلخواه را از فروشگاه به سبد اضافه کنید.</p><a class="btn btn--primary" href="shop.html">رفتن به فروشگاه</a></div>';
       return;
     }
+    const hasUnavailable = lines.some(({ product }) => product.stockStatus === 'out_of_stock');
     root.innerHTML = `<div class="cart-layout"><section class="cart-list"><h1>سبد خرید</h1>${lines.map(({ product, quantity }) => {
       const name = store.escapeHtml(product.name);
-      return `<article class="cart-row" data-cart-id="${product.id}">${store.picture(product)}<div><a href="product.html?id=${product.id}"><b>${name}</b></a><small>${store.escapeHtml(product.category)}</small><span>${store.formatPrice(product.price)}</span></div><label>تعداد<input class="js-cart-qty" type="number" min="0" max="20" value="${quantity}" inputmode="numeric" aria-label="تعداد ${name}"></label><button class="remove-btn js-cart-remove" type="button" aria-label="حذف ${name}">حذف</button></article>`;
-    }).join('')}</section><aside class="order-summary"><h2>خلاصه سبد</h2><p><span>تعداد کالا</span><b>${store.fa.format(store.cartCount())}</b></p><p><span>جمع کل</span><b>${store.formatPrice(store.cartTotal())}</b></p><small>تعداد و اقلام سبد را پیش از ادامه بررسی کنید.</small><a class="btn btn--primary" href="checkout.html">ادامه به تسویه‌حساب</a><a class="text-link" href="shop.html">ادامه مرور محصولات</a></aside></div>`;
+      const unavailable = product.stockStatus === 'out_of_stock';
+      return `<article class="cart-row" data-cart-id="${product.id}">${store.picture(product)}<div><a href="product.html?id=${product.id}"><b>${name}</b></a><small>${store.escapeHtml(product.category)}${unavailable ? ' · ناموجود' : ''}</small><span>${store.formatPrice(product.price)}</span></div><label>تعداد<input class="js-cart-qty" type="number" min="0" max="20" value="${quantity}" inputmode="numeric" aria-label="تعداد ${name}" ${unavailable ? 'disabled' : ''}></label><button class="remove-btn js-cart-remove" type="button" aria-label="حذف ${name}">حذف</button></article>`;
+    }).join('')}</section><aside class="order-summary"><h2>خلاصه سبد</h2><p><span>تعداد کالا</span><b>${store.fa.format(store.cartCount())}</b></p><p><span>جمع کل</span><b>${store.formatPrice(store.cartTotal())}</b></p><small>${hasUnavailable ? 'برای ادامه، محصول ناموجود را از سبد حذف کنید.' : 'تعداد و اقلام سبد را پیش از ادامه بررسی کنید.'}</small>${hasUnavailable ? '<button class="btn btn--primary" type="button" disabled>ادامه به تسویه‌حساب</button>' : '<a class="btn btn--primary" href="checkout.html">ادامه به تسویه‌حساب</a>'}<a class="text-link" href="shop.html">ادامه مرور محصولات</a></aside></div>`;
     root.querySelectorAll('.js-cart-qty').forEach(input => input.addEventListener('change', () => { store.updateCartItem(input.closest('[data-cart-id]').dataset.cartId, input.value); renderCart(); }));
     root.querySelectorAll('.js-cart-remove').forEach(button => button.addEventListener('click', () => { store.updateCartItem(button.closest('[data-cart-id]').dataset.cartId, 0); renderCart(); showMessage('محصول از سبد خرید حذف شد.'); }));
   }
@@ -255,6 +259,10 @@
     const lines = store.cartLines();
     if (!lines.length) {
       $('.checkout-layout').innerHTML = '<div class="empty-state"><h1>سبد خرید خالی است</h1><p>برای ادامه فرایند خرید ابتدا محصولی به سبد اضافه کنید.</p><a class="btn btn--primary" href="shop.html">انتخاب محصول</a></div>';
+      return;
+    }
+    if (lines.some(({ product }) => product.stockStatus === 'out_of_stock')) {
+      $('.checkout-layout').innerHTML = '<div class="empty-state"><h1>سبد خرید نیاز به بازبینی دارد</h1><p>یک یا چند محصول سبد در حال حاضر ناموجود است. آن‌ها را حذف کنید و دوباره ادامه دهید.</p><a class="btn btn--primary" href="cart.html">بازبینی سبد خرید</a></div>';
       return;
     }
     summary.innerHTML = `<h2>خلاصه سفارش</h2>${lines.map(({ product, quantity }) => `<p><span>${store.escapeHtml(product.name)} × ${store.fa.format(quantity)}</span><b>${store.formatPrice(product.price * quantity)}</b></p>`).join('')}<hr><p><span>جمع کل</span><strong>${store.formatPrice(store.cartTotal())}</strong></p><small>اقلام و تعداد محصولات را پیش از ادامه بررسی کنید.</small>`;
@@ -327,11 +335,36 @@
   function setupContactForm() {
     const form = $('#contactForm');
     if (!form) return;
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
       if (!form.checkValidity()) { form.reportValidity(); return; }
-      form.reset();
-      $('#contactResult').hidden = false;
+      const button = form.querySelector('[type="submit"]');
+      const result = $('#contactResult');
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      button.textContent = 'در حال ارسال…';
+      result.hidden = true;
+      result.classList.remove('is-error');
+      try {
+        const fields = new FormData(form);
+        await store.submitContact({
+          name: fields.get('name'), email: fields.get('email'), subject: fields.get('subject'),
+          message: fields.get('message'), website: fields.get('website')
+        });
+        result.querySelector('b').textContent = 'پیام شما ثبت شد.';
+        result.querySelector('span').textContent = 'پس از بررسی، از طریق ایمیل با شما در ارتباط خواهیم بود.';
+        result.hidden = false;
+        form.reset();
+      } catch (error) {
+        result.classList.add('is-error');
+        result.querySelector('b').textContent = 'ارسال پیام انجام نشد.';
+        result.querySelector('span').textContent = error instanceof store.ApiError ? error.message : 'لطفاً دوباره تلاش کنید.';
+        result.hidden = false;
+      } finally {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+        button.textContent = 'ارسال پیام';
+      }
     });
   }
 
@@ -346,8 +379,23 @@
 
   renderShop();
   renderProduct();
-  renderCart();
-  renderCheckout();
+  async function hydrateCartPages() {
+    const cartRoot = $('#cartPage');
+    const checkoutRoot = $('#checkoutSummary');
+    if (!cartRoot && !checkoutRoot) return;
+    if (cartRoot) cartRoot.innerHTML = loadingMarkup('قیمت و وضعیت محصولات در حال دریافت است.');
+    try {
+      await store.loadCatalog();
+      store.updateCartBadges();
+      renderCart();
+      renderCheckout();
+    } catch (_) {
+      const root = cartRoot || $('.checkout-layout');
+      if (root) root.innerHTML = errorMarkup('برای نمایش اطلاعات به‌روز سبد، ارتباط با سرویس محصولات را بررسی کنید.');
+    }
+  }
+
+  hydrateCartPages();
   setupContactForm();
   document.addEventListener('click', event => {
     if (event.target.closest('.js-retry')) location.reload();

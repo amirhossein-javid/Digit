@@ -196,6 +196,7 @@ main, .site-header, footer { width: 100%; max-width: 100vw; }
 .stars { overflow: hidden; color: #f5ac16; font-size: 0.68rem; white-space: nowrap; }
 .stars small { color: var(--muted); }
 .add-btn, .add-best { flex: none; width: 40px; height: 40px; border: 0; border-radius: 9px; background: var(--purple); color: #fff; font-size: 1.2rem; }
+.add-btn:disabled, .add-best:disabled, .newsletter button:disabled { cursor: not-allowed; opacity: .55; }
 
 .new-grid { display: grid; gap: 12px; }
 .new-grid > .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

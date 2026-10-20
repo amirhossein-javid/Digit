@@ -73,7 +73,8 @@
       if (best) best.innerHTML = bestProducts.map((product, index) => {
         const name = store.escapeHtml(product.name);
         const category = store.escapeHtml(product.category);
-        return `<article class="best-card" data-id="${product.id}"><span class="best-rank">۰${index + 1}</span><a href="product.html?id=${product.id}">${store.picture(product)}</a><div><h3><a href="product.html?id=${product.id}">${name}</a></h3><small>${category}</small><strong>${store.formatPrice(product.price)}</strong></div><button class="add-best js-add-cart" type="button" data-product-id="${product.id}" aria-label="افزودن ${name} به سبد خرید">+</button></article>`;
+        const unavailable = product.stockStatus === 'out_of_stock';
+        return `<article class="best-card" data-id="${product.id}"><span class="best-rank">۰${index + 1}</span><a href="product.html?id=${product.id}">${store.picture(product)}</a><div><h3><a href="product.html?id=${product.id}">${name}</a></h3><small>${category}</small><strong>${store.formatPrice(product.price)}</strong></div><button class="add-best js-add-cart" type="button" data-product-id="${product.id}" aria-label="${unavailable ? `${name} ناموجود است` : `افزودن ${name} به سبد خرید`}" ${unavailable ? 'disabled' : ''}>${unavailable ? '×' : '+'}</button></article>`;
       }).join('');
     } catch (_) {
       const error = stateMarkup('بارگذاری محصولات انجام نشد', 'ارتباط با سرویس محصولات را بررسی و صفحه را دوباره بارگذاری کنید.');
@@ -98,8 +99,9 @@
   document.addEventListener('click', event => {
     const addButton = event.target.closest('.js-add-cart');
     if (addButton && store) {
-      store.addToCart(addButton.dataset.productId, 1);
-      showToast('محصول به سبد خرید افزوده شد.');
+      showToast(store.addToCart(addButton.dataset.productId, 1)
+        ? 'محصول به سبد خرید افزوده شد.'
+        : 'این محصول در حال حاضر قابل سفارش نیست.');
     }
   });
 
@@ -161,10 +163,32 @@
     }, 1000);
   }
 
-  $('#newsletterForm')?.addEventListener('submit', event => {
+  $('#newsletterForm')?.addEventListener('submit', async event => {
     event.preventDefault();
     if (!event.currentTarget.reportValidity()) return;
-    showToast('عضویت خبرنامه به‌زودی فعال می‌شود.');
+    const form = event.currentTarget;
+    const button = form.querySelector('button');
+    const result = $('#newsletterResult');
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    button.textContent = 'در حال ثبت…';
+    try {
+      const response = await store.subscribeNewsletter(new FormData(form).get('email'));
+      const message = response.duplicate
+        ? 'این ایمیل پیش‌تر در خبرنامه ثبت شده است.'
+        : 'عضویت شما در خبرنامه با موفقیت ثبت شد.';
+      if (result) result.textContent = message;
+      showToast(message);
+      if (!response.duplicate) form.reset();
+    } catch (error) {
+      const message = error instanceof store.ApiError ? error.message : 'ثبت ایمیل انجام نشد. لطفاً دوباره تلاش کنید.';
+      if (result) result.textContent = message;
+      showToast(message);
+    } finally {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      button.textContent = 'عضویت';
+    }
   });
 
   const testimonialViewport = $('.testimonial-viewport');

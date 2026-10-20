@@ -228,7 +228,7 @@
       if (error instanceof ApiError) throw error;
       const message = error?.name === 'AbortError'
         ? 'زمان پاسخ‌گویی سرویس به پایان رسید.'
-        : 'ارتباط با سرویس محصولات برقرار نشد.';
+        : 'ارتباط با سرویس برقرار نشد.';
       throw new ApiError(message, 0, error?.name === 'AbortError' ? 'timeout' : 'network_error');
     } finally {
       clearTimeout(timeout);
@@ -283,6 +283,25 @@
     return payload.data;
   }
 
+  async function submitContact(message) {
+    const payload = await request('contact.php', {}, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: message
+    });
+    if (!payload.data?.messageId) throw new ApiError('پاسخ ثبت پیام معتبر نیست.', 0, 'invalid_response');
+    return payload.data;
+  }
+
+  async function subscribeNewsletter(email) {
+    const payload = await request('newsletter.php', {}, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: { email }
+    });
+    return payload.data || {};
+  }
+
   const formatPrice = value => `${fa.format(value)} تومان`;
   const getProduct = id => products.find(product => product.id === Number(id));
 
@@ -306,10 +325,12 @@
   }
 
   function addToCart(id, quantity = 1) {
-    if (!getProduct(id)) return;
+    const product = getProduct(id);
+    if (!product || product.stockStatus === 'out_of_stock') return false;
     const cart = getCart();
     cart[id] = Math.min(20, (cart[id] || 0) + Math.max(1, Number(quantity) || 1));
     saveCart(cart);
+    return true;
   }
 
   function updateCartItem(id, quantity) {
@@ -344,18 +365,19 @@
   function productCard(product) {
     const name = escapeHtml(product.name);
     const category = escapeHtml(product.category);
+    const unavailable = product.stockStatus === 'out_of_stock';
     return `<article class="product-card" data-id="${product.id}">
       <a class="product-image" href="product.html?id=${product.id}" aria-label="مشاهده ${name}">${picture(product)}</a>
       <small class="product-category">${category}</small>
       <h3><a href="product.html?id=${product.id}">${name}</a></h3>
       <div class="price-row"><strong>${formatPrice(product.price)}</strong></div>
-      <div class="product-meta"><a class="details-link" href="product.html?id=${product.id}">جزئیات</a><button class="add-btn js-add-cart" type="button" data-product-id="${product.id}" aria-label="افزودن ${name} به سبد خرید">+</button></div>
+      <div class="product-meta"><a class="details-link" href="product.html?id=${product.id}">جزئیات</a><button class="add-btn js-add-cart" type="button" data-product-id="${product.id}" aria-label="${unavailable ? `${name} ناموجود است` : `افزودن ${name} به سبد خرید`}" ${unavailable ? 'disabled' : ''}>${unavailable ? '×' : '+'}</button></div>
     </article>`;
   }
 
   window.NovaStore = {
     products, fa, apiBase, ApiError, escapeHtml, formatPrice, getProduct,
-    fetchProducts, loadCatalog, fetchProduct, fetchCategories, createOrder,
+    fetchProducts, loadCatalog, fetchProduct, fetchCategories, createOrder, submitContact, subscribeNewsletter,
     getCart, saveCart, clearCart, addToCart, updateCartItem, cartLines, cartTotal,
     cartCount, updateCartBadges, picture, productCard
   };

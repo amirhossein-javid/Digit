@@ -63,16 +63,22 @@ final class ImageUploadService
 
     public function remove(string $relativePath): void
     {
-        if (!str_starts_with($relativePath, 'assets/images/products/uploads/')) {
+        if (!preg_match('#^assets/images/products/uploads/[a-f0-9]{32}\.(?:webp|avif)$#D', $relativePath)) {
             return;
         }
         $configuredRoot = Environment::get('PUBLIC_ROOT');
         $publicRoot = is_string($configuredRoot) && trim($configuredRoot) !== ''
             ? trim($configuredRoot)
             : dirname(__DIR__, 3);
-        $target = rtrim($publicRoot, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
-        if (is_file($target)) {
-            @unlink($target);
+        $directory = rtrim($publicRoot, '/\\') . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR
+            . 'images' . DIRECTORY_SEPARATOR . 'products' . DIRECTORY_SEPARATOR . 'uploads';
+        $target = $directory . DIRECTORY_SEPARATOR . basename($relativePath);
+        $resolvedDirectory = realpath($directory);
+        $resolvedTarget = realpath($target);
+        if ($resolvedDirectory !== false && $resolvedTarget !== false
+            && str_starts_with($resolvedTarget, $resolvedDirectory . DIRECTORY_SEPARATOR)
+            && is_file($resolvedTarget)) {
+            @unlink($resolvedTarget);
         }
     }
 }

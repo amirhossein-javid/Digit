@@ -19,6 +19,7 @@ function admin_header(string $title, string $active = ''): void
         'products' => ['products.php', 'محصولات'],
         'categories' => ['categories.php', 'دسته‌بندی‌ها'],
         'orders' => ['orders.php', 'سفارش‌ها'],
+        'messages' => ['messages.php', 'پیام‌های تماس'],
     ];
     $nav = '';
     foreach ($links as $key => [$href, $label]) {

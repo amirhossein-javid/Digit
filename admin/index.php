@@ -18,6 +18,7 @@ admin_header('داشبورد', 'dashboard');
   <article class="stat-card"><span>محصولات فعال</span><strong><?= number_format($counts['products']) ?></strong></article>
   <article class="stat-card"><span>همه سفارش‌ها</span><strong><?= number_format($counts['orders']) ?></strong></article>
   <article class="stat-card"><span>سفارش‌های جدید</span><strong><?= number_format($counts['pendingOrders']) ?></strong></article>
+  <article class="stat-card"><span>پیام‌های خوانده‌نشده</span><strong><?= number_format($counts['newMessages']) ?></strong></article>
 </section>
 <section class="panel"><div class="panel-head"><h2>آخرین سفارش‌ها</h2><a class="btn btn--soft" href="orders.php">همه سفارش‌ها</a></div>
 <?php if ($orders === []): ?><div class="empty">هنوز سفارشی ثبت نشده است.</div><?php else: ?>

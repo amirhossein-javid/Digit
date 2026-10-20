@@ -12,13 +12,14 @@ final class AdminDashboardRepository
     {
     }
 
-    /** @return array{products: int, orders: int, pendingOrders: int} */
+    /** @return array{products: int, orders: int, pendingOrders: int, newMessages: int} */
     public function counts(): array
     {
         return [
             'products' => (int) $this->database->query('SELECT COUNT(*) FROM products WHERE is_active = 1')->fetchColumn(),
             'orders' => (int) $this->database->query('SELECT COUNT(*) FROM orders')->fetchColumn(),
             'pendingOrders' => (int) $this->database->query("SELECT COUNT(*) FROM orders WHERE status = 'pending'")->fetchColumn(),
+            'newMessages' => (int) $this->database->query("SELECT COUNT(*) FROM contact_messages WHERE status = 'new'")->fetchColumn(),
         ];
     }
 

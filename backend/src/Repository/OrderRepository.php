@@ -165,7 +165,7 @@ final class OrderRepository
 
     private function generateOrderNumber(): string
     {
-        return 'NVA-' . gmdate('Ymd') . '-' . strtoupper(bin2hex(random_bytes(5)));
+        return 'DGT-' . gmdate('Ymd') . '-' . strtoupper(bin2hex(random_bytes(5)));
     }
 
     /** @param array<string, mixed> $row

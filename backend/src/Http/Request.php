@@ -22,6 +22,24 @@ final class Request
         }
     }
 
+    public static function requireSameOrigin(): void
+    {
+        $fetchSite = strtolower(self::header('Sec-Fetch-Site') ?? '');
+        if ($fetchSite === 'cross-site') {
+            ApiResponse::error('cross_site_request', 'درخواست از مبدأ دیگری پذیرفته نمی‌شود.', 403);
+        }
+
+        $origin = self::header('Origin');
+        if ($origin === null) {
+            return;
+        }
+        $originHost = parse_url($origin, PHP_URL_HOST);
+        $requestHost = strtolower(trim(explode(':', (string) ($_SERVER['HTTP_HOST'] ?? ''))[0]));
+        if (!is_string($originHost) || $requestHost === '' || strtolower($originHost) !== $requestHost) {
+            ApiResponse::error('cross_site_request', 'درخواست از مبدأ دیگری پذیرفته نمی‌شود.', 403);
+        }
+    }
+
     /** @return array<string, mixed> */
     public static function jsonBody(int $maximumBytes = 32768): array
     {

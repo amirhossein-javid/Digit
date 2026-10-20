@@ -108,3 +108,12 @@ function admin_status_label(string $status): string
 {
     return ['pending' => 'جدید', 'confirmed' => 'تأییدشده', 'cancelled' => 'لغوشده'][$status] ?? $status;
 }
+
+function admin_contact_subject_label(string $subject): string
+{
+    return [
+        'product_guidance' => 'راهنمای انتخاب محصول',
+        'product_specs' => 'پرسش درباره مشخصات',
+        'cart_support' => 'راهنمای سبد خرید',
+    ][$subject] ?? $subject;
+}
