@@ -1,86 +1,261 @@
-# فروشگاه الکترونیک دیجیت
+# Digit
 
-یک فروشگاه چندصفحه‌ای محصولات دیجیتال فارسی، کاملاً راست‌چین و واکنش‌گرا، همراه با API و پنل مدیریت مبتنی بر PHP خام و MySQL.
+Digit is a full-stack, Persian right-to-left e-commerce portfolio project built to demonstrate practical web design and development skills to prospective clients and employers. It combines a polished storefront, a JSON API, persistent catalog and order data, customer-contact workflows, and a protected administration panel without a framework or build pipeline.
 
-## اجرا
+**Live application:** [https://digit-store.ir/](https://digit-store.ir/)
 
-نمایش محصولات فرانت‌اند از API خوانده می‌شود و برای اجرای کامل باید سایت از طریق PHP اجرا شود. PHP 8.1 یا جدیدتر با افزونه‌های `pdo_mysql`، `mbstring` و `fileinfo` و یک دیتابیس MySQL/MariaDB نیاز است؛ Composer، Node.js و فرایند build لازم نیست.
+The deployed application is operational as a portfolio system. It is not presented as an active retail business.
 
-## صفحات
+## Project Scope
 
-- `index.html` — صفحه اصلی
-- `shop.html` — فروشگاه، جستجو، فیلتر و مرتب‌سازی
-- `product.html?id=1` — جزئیات محصول و مشخصات
-- `cart.html` — سبد خرید محلی با مدیریت تعداد و حذف کالا
-- `checkout.html` — ثبت سفارش در MySQL با اعتبارسنجی مرورگر و سرور
-- `about.html` — معرفی پروژه و راهنمای انتخاب
-- `contact.html` — فرم تماس متصل به دیتابیس با اعتبارسنجی مرورگر و سرور
+Digit implements product discovery, a browser-based cart, server-validated order intake, contact and newsletter submissions, and administrative catalog/order management. Payment processing, customer accounts, shipping and tax calculation, fulfillment, email delivery, and automatic inventory deduction are outside the current scope.
 
-## امکانات
+## Features
 
-- طراحی واکنش‌گرا برای دسکتاپ، تبلت و موبایل
-- اسلایدر هیرو و شمارش معکوس پیشنهاد ویژه
-- سبد خرید مبتنی بر `localStorage` با تغییر تعداد و حذف کالا
-- مسیر کامل خانه ← فروشگاه ← محصول ← سبد ← ثبت سفارش
-- فیلتر، جستجو و مرتب‌سازی کاتالوگ
-- گالری سه‌حالته محصول، انتخاب تعداد و نمایش مشخصات فنی
-- نمایش وضعیت موجودی و محصولات مرتبط
-- فرم‌های دسترس‌پذیر با اعتبارسنجی فرانت‌اند
-- منوی موبایل و ناوبری واقعی میان صفحات
-- استفادهٔ کامل از تصاویر محلی و مسیرهای نسبی
+### Storefront
 
-## API محصولات
+- Responsive Persian RTL interface for desktop, tablet, and mobile
+- Home-page sections, product collections, promotional content, hero controls, and countdown UI
+- API-backed catalog, category filtering, search, sorting, and product details
+- Product specifications, related products, and stock-state handling
+- Browser-side cart stored in `localStorage`, with quantity limits and removal
+- Checkout that persists orders in MySQL
+- Idempotent order submission to prevent duplicates after retries
+- Contact and newsletter forms persisted in MySQL
+- Local WebP and AVIF assets with no external runtime asset dependency
 
-- `GET /api/products.php` — فهرست محصولات
-- `GET /api/products.php?q=surface&category=laptops&sort=price-asc&page=1&limit=12`
-- `GET /api/product.php?id=1` — جزئیات و مشخصات محصول
-- `GET /api/categories.php` — دسته‌بندی‌ها و تعداد محصولات
-- `POST /api/orders.php` — ثبت سفارش با بدنه JSON و سربرگ یکتای `Idempotency-Key`
-- `POST /api/contact.php` — ثبت پیام تماس با اعتبارسنجی و محدودسازی نرخ ارسال
-- `POST /api/newsletter.php` — عضویت خبرنامه با جلوگیری از ثبت ایمیل تکراری
+### Administration
 
-پارامترهای مرتب‌سازی مجاز: `default`، `price-asc`، `price-desc`، `name` و `newest`. فهرست‌ها، جستجو، فیلتر و جزئیات محصول از API دریافت می‌شوند. هنگام ثبت سفارش، قیمت‌ها فقط از دیتابیس خوانده می‌شوند و سفارش و اقلام آن در یک تراکنش ذخیره می‌شوند. کلید یکتای درخواست نیز از ثبت دوباره سفارش در اثر ارسال مجدد جلوگیری می‌کند.
+- One-time first-administrator setup protected by a setup token
+- Session-based login with password hashing and failed-login throttling
+- Dashboard counts and recent-order overview
+- Product creation and editing, specifications, image uploads, and soft activation/deactivation
+- Category creation and editing
+- Order search, filtering, details, status updates, and status history
+- Contact-message search, filtering, details, and read/unread state
 
-## پنل مدیریت
+## Technology Stack
 
-پنل از مسیر `admin/` در دسترس است و شامل داشبورد، مدیریت محصولات و دسته‌بندی‌ها، غیرفعال‌سازی منطقی محصولات، مدیریت سفارش‌ها، تاریخچه تغییر وضعیت و مشاهده پیام‌های تماس است. ورود با Session امن، CSRF و محدودسازی تلاش ناموفق محافظت می‌شود.
+| Layer | Technology |
+| --- | --- |
+| Storefront | Semantic HTML5, CSS3, vanilla JavaScript, Persian RTL layout |
+| API and admin | PHP 8.1+ with strict types and no framework |
+| Data access | PDO with prepared statements |
+| Database | MySQL or MariaDB using InnoDB and `utf8mb4` |
+| Authentication | PHP sessions and `password_hash()` / `password_verify()` |
+| Assets | Local CSS, JavaScript, Vazirmatn WOFF2, WebP, and AVIF |
+| Tooling | No Composer, npm, transpiler, or build step |
 
-برای دیتابیس موجود، migrationهای اجرا‌نشده پوشه `database/migrations` را به‌ترتیب و فقط یک‌بار اجرا کنید. سپس در فایل محیطی خصوصی دو مقدار تصادفی و مستقل با حداقل ۳۲ کاراکتر برای `APP_KEY` و `ADMIN_SETUP_TOKEN` قرار دهید و `PUBLIC_ROOT` را برابر مسیر مطلق ریشه عمومی سایت تنظیم کنید. صفحه `admin/setup.php` فقط تا پیش از ساخت اولین مدیر فعال است؛ پس از ساخت مدیر، ورود از `admin/login.php` انجام می‌شود. هیچ نام کاربری یا رمز پیش‌فرضی در پروژه وجود ندارد.
+The legacy internal identifiers `Nova` (PHP namespace) and `window.NovaStore` (browser API) are retained for compatibility; the product name is Digit.
 
-## راه‌اندازی محلی API
+## Architecture
 
-1. یک دیتابیس MySQL با `utf8mb4` بسازید.
-2. برای نصب تازه ابتدا `database/schema.sql` و سپس `database/seed.sql` را Import کنید. روی دیتابیس موجود فقط migrationهای اجرا‌نشده را به‌ترتیب اعمال کنید.
-3. فایل `.env.example` را خارج از ریشه عمومی، برای نمونه با نام `../nova-store.env` کپی و اطلاعات اتصال، کلید برنامه، توکن راه‌اندازی و مسیر `PUBLIC_ROOT` را وارد کنید.
-4. در PowerShell مسیر تنظیمات را برای همان نشست تعیین کنید: `$env:NOVA_ENV_FILE=(Resolve-Path ../nova-store.env)`.
-5. از ریشه پروژه اجرا کنید: `php -S 127.0.0.1:8000`.
-6. سایت را در `http://127.0.0.1:8000/` و API را در `http://127.0.0.1:8000/api/products.php` بررسی کنید.
+The application uses a small layered architecture:
 
-مسیر API به‌صورت پیش‌فرض نسبی و برابر `api` است. در استقرار متفاوت می‌توان پیش از `catalog.js` مقدار `window.NOVA_CONFIG = { apiBase: '/path/to/api' }` را تعیین کرد؛ هیچ آدرس localhost یا دامنه‌ای در کد کاتالوگ ثابت نشده است.
+1. Static HTML pages load shared layout and page behavior from `assets/js/`.
+2. Browser code calls endpoint scripts in `api/` and expects a consistent JSON envelope.
+3. Endpoint scripts bootstrap the private runtime, validate HTTP requests, and delegate to services and repositories.
+4. Services implement validation and security-sensitive business rules.
+5. Repositories use PDO prepared statements and transactions to access MySQL.
+6. The `admin/` application renders server-side PHP pages and uses the same private layers.
 
-## استقرار روی cPanel
+```text
+electronics-store/
+├── admin/                  Server-rendered administration panel
+│   └── assets/             Admin-only CSS and JavaScript
+├── api/                    Public JSON endpoint scripts
+├── assets/
+│   ├── css/                Storefront styles
+│   ├── fonts/              Local Vazirmatn font
+│   ├── images/             Promotional and product images
+│   └── js/                 API client, shared UI, and page controllers
+├── backend/
+│   ├── bootstrap.php       Autoloader, environment loading, error handling
+│   └── src/
+│       ├── Config/         Environment reader
+│       ├── Database/       PDO connection factory
+│       ├── Exception/      API and admin validation exceptions
+│       ├── Http/           Request parsing and JSON responses
+│       ├── Repository/     Database queries and transactions
+│       ├── Security/       Admin sessions and CSRF tokens
+│       └── Service/        Validation, authentication, and uploads
+├── database/
+│   ├── schema.sql          Complete schema for a fresh installation
+│   ├── seed.sql            Repeatable initial catalog data
+│   └── migrations/         Manual upgrades for older databases
+├── *.html                  Public storefront pages
+├── .env.example            Environment variable template
+└── AGENTS.md               Guidance for maintainers and coding agents
+```
 
-1. فایل‌های عمومی، از جمله صفحات، `assets`، `api` و `admin` را در `public_html` قرار دهید.
-2. محتوای پوشه `backend` را خارج از مسیر عمومی در `~/nova-private` قرار دهید؛ فایل `bootstrap.php` باید در `~/nova-private/bootstrap.php` باشد.
-3. یک فایل `.env` واقعی داخل `~/nova-private` بسازید و اطلاعات دیتابیس cPanel را در آن قرار دهید. این فایل را در Git یا `public_html` قرار ندهید.
-4. در نصب تازه، در phpMyAdmin ابتدا `database/schema.sql` و سپس `database/seed.sql` را Import کنید؛ روی دیتابیس موجود migrationهای اجرا‌نشده را به‌ترتیب اعمال کنید. پوشه‌های `database` و `dist` و فایل مرجع طراحی `assets/images/reference.png` نباید در خروجی عمومی استقرار قرار گیرند.
-5. PHP 8.1 یا جدیدتر و افزونه‌های `pdo_mysql`، `mbstring` و `fileinfo` را در cPanel فعال کنید.
-6. برای دیتابیس موجود migration پنل را اجرا و سپس مدیر اولیه را از `admin/setup.php` ایجاد کنید.
+## Requirements
 
-## منابع تصاویر محصولات
+- PHP 8.1 or newer
+- MySQL 8+ or a compatible MariaDB release
+- PHP extensions: `pdo_mysql`, `mbstring`, and `fileinfo`
+- A PHP build capable of inspecting WebP and AVIF images if admin uploads are used
+- A modern browser
 
-تصاویر زیر از Wikimedia Commons دریافت، برای نمایش وب برش/تغییر اندازه داده و به WebP و AVIF تبدیل شده‌اند:
+## Local Setup
 
-- Samsung Galaxy S24 Ultra — Dinkun Chen، CC BY-SA 4.0 ([منبع](https://commons.wikimedia.org/wiki/File:SAMSUNG_Galaxy_S24_Ultra_(6).jpg))
-- Microsoft Surface — KK IN HK، CC BY-SA 4.0 ([منبع](https://commons.wikimedia.org/wiki/File:Laptop_PC.jpg))
-- Bose QuietComfort 25 — Florian Fuchs، CC BY-SA 3.0 ([منبع](https://commons.wikimedia.org/wiki/File:Bose_QuietComfort_25_Acoustic_Noise_Cancelling_Headphones_with_Carry_Case.jpg))
-- ساعت Wear OS — Unsplash، CC BY-SA 4.0 ([منبع](https://commons.wikimedia.org/wiki/File:Android_white_watch.jpg))
-- Amazon Echo — Smart Home Perfected، CC BY 2.0 ([منبع](https://commons.wikimedia.org/wiki/File:Alexa_Amazon_Echo_Smart_Speaker_-_Flashing_Blue_Ring_(Creative_Commons)_(51048329823).jpg))
-- Nikon Z30 — 昼落ち، CC BY-SA 4.0 ([منبع](https://commons.wikimedia.org/wiki/File:Nikon_Z_30_5_aug_2022a.jpg))
-- تبلت روی میز — Matthew Guay، CC0 ([منبع](https://commons.wikimedia.org/wiki/File:Tablet_on_a_newspaper_(Unsplash).jpg))
-- Hykker ActiveSound — Public domain ([منبع](https://commons.wikimedia.org/wiki/File:ActiveSound_wireless_earbuds_by_Hykker_(POJM200483).jpg))
-- DJI Phantom 3 Advanced — Jacek Halicki، CC BY-SA 4.0 ([منبع](https://commons.wikimedia.org/wiki/File:2015_Dron_DJI_Phantom_3_Advanced.JPG))
-- UE Boom — Sinchen.Lin، CC BY 2.0 ([منبع](https://commons.wikimedia.org/wiki/File:UE_Boom_speakers.jpg))
-- کنترلر Xbox 360 — Evan-Amos، Public domain ([منبع](https://commons.wikimedia.org/wiki/File:Xbox-360-Controller-Black.jpg))
-- Echo Dot — Smart Home Perfected، CC BY 2.0 ([منبع](https://commons.wikimedia.org/wiki/File:Alexa_Amazon_Echo_Dot_3rd_Gen_Smart_Speaker_-_Sandstone_Fabric_(Creative_Commons)_(51049273602).jpg))
-- Surface Pro — KK IN HK، CC BY-SA 4.0 ([منبع](https://commons.wikimedia.org/wiki/File:Laptop_computer.jpeg))
+1. Create a database with `utf8mb4` support:
+
+   ```sql
+   CREATE DATABASE digit_store
+     CHARACTER SET utf8mb4
+     COLLATE utf8mb4_unicode_ci;
+   ```
+
+2. Import the current schema, then the initial product catalog:
+
+   ```bash
+   mysql -u root -p digit_store < database/schema.sql
+   mysql -u root -p digit_store < database/seed.sql
+   ```
+
+3. Create the local private environment file:
+
+   ```bash
+   cp .env.example backend/.env
+   ```
+
+   PowerShell equivalent:
+
+   ```powershell
+   Copy-Item .env.example backend/.env
+   ```
+
+4. Edit `backend/.env`. Set the database credentials and generate independent random values of at least 32 characters for `APP_KEY` and `ADMIN_SETUP_TOKEN`. `PUBLIC_ROOT` may be empty locally because the application can resolve the repository root from `backend/`.
+
+5. Start PHP's development server from the repository root:
+
+   ```bash
+   php -S 127.0.0.1:8000
+   ```
+
+6. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). To create the first administrator, visit [http://127.0.0.1:8000/admin/setup.php](http://127.0.0.1:8000/admin/setup.php) and use the configured setup token.
+
+The application may alternatively load an environment file from the absolute path in `NOVA_ENV_FILE`. Without that process variable, it looks for `backend/.env`.
+
+## Environment Configuration
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `APP_KEY` | Yes | HMAC key for privacy-preserving client and login identifiers; minimum 32 characters |
+| `ADMIN_SETUP_TOKEN` | For initial setup | Authorizes the first administrator; minimum 32 characters |
+| `DB_HOST` | Yes | MySQL host |
+| `DB_PORT` | No | MySQL port; defaults to `3306` |
+| `DB_NAME` | Yes | Database name; letters, digits, and underscores only |
+| `DB_USER` | Yes | Database user |
+| `DB_PASS` | Yes | Database password |
+| `DB_CHARSET` | No | `utf8mb4` by default; `utf8` is also accepted |
+| `PUBLIC_ROOT` | Production/uploads | Absolute public document root used for product image uploads |
+| `NOVA_ENV_FILE` | No | Process variable pointing to an alternate environment file |
+
+`APP_ENV` and `APP_DEBUG` are present in the template for deployment convention, but the current runtime does not branch on either value. Never commit a populated `.env` file.
+
+## Database Lifecycle
+
+`database/schema.sql` is the source of truth for a fresh installation and already contains the current schema. `database/seed.sql` supplies the project's initial categories, products, specifications, prices, and image paths through repeatable upserts.
+
+Files in `database/migrations/` are for databases created before later features were added. They are manual, ordered upgrades and there is no migration ledger. Apply only migrations that have not already been applied:
+
+- `002_admin_panel.sql` adds admin support, product activation, and order status history.
+- `003_contact_newsletter.sql` adds contact messages and newsletter subscribers.
+
+Do not run `002_admin_panel.sql` against the current fresh schema because its `ALTER TABLE` would attempt to add an existing column.
+
+## HTTP API
+
+Successful and failed responses use these envelopes:
+
+```json
+{"success":true,"data":{},"meta":{}}
+```
+
+```json
+{"success":false,"error":{"code":"error_code","message":"Localized message"}}
+```
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| `GET` | `/api/categories.php` | All categories with active-product counts |
+| `GET` | `/api/products.php` | Paginated active products |
+| `GET` | `/api/product.php?id=1` | One active product with specifications |
+| `POST` | `/api/orders.php` | Validate and persist an order |
+| `POST` | `/api/contact.php` | Validate and persist a contact message |
+| `POST` | `/api/newsletter.php` | Create or reactivate a subscription |
+
+`GET /api/products.php` accepts `q`, `category`, `sort`, `page`, and `limit`. Valid sort values are `default`, `price-asc`, `price-desc`, `name`, and `newest`; `limit` is restricted to 1–100.
+
+POST endpoints require `Content-Type: application/json` and reject cross-site browser requests. Order creation additionally requires an `Idempotency-Key` header containing a valid UUID. The server reloads product prices and availability from the database inside a transaction; client totals are never trusted.
+
+The browser API base defaults to the relative `api` directory. A different deployment path can set `window.NOVA_CONFIG = { apiBase: '/path/to/api' }` before loading `assets/js/catalog.js`.
+
+## Administration
+
+The panel is available at `/admin/`. On an empty `admins` table, `/admin/setup.php` accepts `ADMIN_SETUP_TOKEN` and creates exactly one initial administrator under a database lock. After the first administrator exists, the setup route redirects to login.
+
+For production, clear `ADMIN_SETUP_TOKEN` after initial setup. Admin product uploads accept WebP and AVIF variants up to 4 MiB each; a new product requires both formats. Uploaded files are stored under `assets/images/products/uploads/` with random filenames.
+
+## Security Model
+
+The implementation includes:
+
+- PDO prepared statements and strict server-side validation
+- Transactional orders, row locking, server-authoritative prices, and idempotency keys
+- Same-origin checks for public POST endpoints
+- Contact and newsletter rate limits using HMAC-derived client identifiers
+- Password hashing with PHP's current default algorithm and transparent rehashing
+- Login throttling after five failed attempts within 15 minutes
+- Strict, HTTP-only, same-site admin cookies; secure cookies under HTTPS
+- A 30-minute idle timeout and periodic session ID regeneration
+- CSRF tokens on all state-changing admin forms
+- Output escaping and an admin Content Security Policy
+- MIME, format, dimensions, size, and path validation for uploads
+- Generic production error responses with details sent to server logs
+
+These controls do not replace infrastructure protections such as HTTPS enforcement, least-privilege database access, backups, monitoring, and operating-system patching.
+
+## Production Deployment
+
+The repository supports a split public/private cPanel-style deployment:
+
+1. Place only the root HTML files plus `assets/`, `api/`, and `admin/` in the public document root (for example, `public_html`).
+2. Place the **contents** of `backend/` in a private sibling directory named `nova-private`, so `nova-private/bootstrap.php` exists outside the document root.
+3. Create `nova-private/.env` with production credentials and set `PUBLIC_ROOT` to the absolute public document root.
+4. Import `database/schema.sql`, followed by `database/seed.sql` when the initial catalog is required. Do not publish `database/`, `.git/`, `.env`, deployment archives, or `assets/images/reference.png`.
+5. Ensure the web server can write to `assets/images/products/uploads/` if admin uploads are enabled.
+6. Create the first administrator, clear `ADMIN_SETUP_TOKEN`, remove deployment archives, and test the storefront, API, and admin login.
+
+The public bootstraps first look for `nova-private/bootstrap.php` beside the document root and retain `backend/bootstrap.php` as a local-development fallback.
+
+## Quality and Test Status
+
+This repository currently has **no automated test suite, CI workflow, or dependency-based linter**.
+
+Before submitting PHP changes, run syntax checks when PHP is installed:
+
+```powershell
+Get-ChildItem admin,api,backend -Recurse -Filter *.php |
+  ForEach-Object { php -l $_.FullName }
+```
+
+Then run the application locally and manually verify:
+
+- home, shop, search, category filtering, sorting, and product details;
+- cart persistence, quantity changes, and unavailable-product behavior;
+- one order submission and safe retry behavior;
+- contact and newsletter submissions;
+- admin setup/login, CSRF-protected writes, product/category changes, uploads, order status, and messages;
+- responsive layouts and absence of browser console errors.
+
+## Repository Safety
+
+The repository ignores populated environment files, runtime uploads, deployment bundles, logs, editor files, and local database exports. `.env.example` contains placeholders only and is intentionally tracked. Before publishing, inspect both the working tree and reachable history; ignored files can still contain production credentials on a developer machine.
+
+## License
+
+First-party source code and original documentation in this repository are available under the [MIT License](LICENSE).
+
+The MIT License applies only to material that the copyright holder is authorized to license. It does not automatically relicense third-party images, fonts, trademarks, product names, or other externally sourced content; those materials remain subject to their respective owners' terms.

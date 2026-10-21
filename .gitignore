@@ -13,9 +13,25 @@ Thumbs.db
 *.swp
 *.swo
 *.bak
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.tgz
 .idea/
 .vscode/
 dist/
+deploy/
+
+# Private keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Local backup directories
+backup/
+backups/
 
 # Local database exports
 *.sql.gz
