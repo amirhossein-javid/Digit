@@ -60,7 +60,7 @@ The application uses a small layered architecture:
 6. The `admin/` application renders server-side PHP pages and uses the same private layers.
 
 ```text
-electronics-store/
+Digit/
 ├── admin/                  Server-rendered administration panel
 │   └── assets/             Admin-only CSS and JavaScript
 ├── api/                    Public JSON endpoint scripts
@@ -257,5 +257,7 @@ The repository ignores populated environment files, runtime uploads, deployment 
 ## License
 
 First-party source code and original documentation in this repository are available under the [MIT License](LICENSE).
+
+The bundled Vazirmatn font is distributed independently under the [SIL Open Font License, Version 1.1](assets/fonts/OFL.txt) and is not covered by the repository's MIT License.
 
 The MIT License applies only to material that the copyright holder is authorized to license. It does not automatically relicense third-party images, fonts, trademarks, product names, or other externally sourced content; those materials remain subject to their respective owners' terms.
